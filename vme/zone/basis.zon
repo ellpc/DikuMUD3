@@ -546,6 +546,9 @@ var
    goodbye : string;
    s : string;
    exd : extraptr;
+   
+   today : stringlist;
+   birthday : stringlist;
 
 code
 {
@@ -575,6 +578,12 @@ code
       gamestate(self, GS_PLAY);
       informer();
       login_modify(self);
+      today := getwords(asctime(realtime));
+      birthday := getwords(asctime(self.birth));
+      if((today.[1] + today.[2]) == (birth.[1] + birth.[2])){
+      	sendtext("Today is your &c+yb&c+gi&c+br&c+ct&c+wh&c+gd&c+ya&c+wy&[default]! HAPPY BIRTHDAY!", self);
+	log("Today is " + self.name + "'s birthday! Wish them a happy birthday! Or not - up to you!");
+      }
       exec("look", self);
       login_event@bounty();
       quit;
