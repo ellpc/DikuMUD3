@@ -1,0 +1,15 @@
+/*
+filename    gamify
+password 	password
+changedby   Aja
+EmailAdd    LCC
+request     compile
+version     1.0
+END HEADER*/
+#include <macros.h>
+%zone gamify
+title ""
+lifespan 20
+reset RESET_NOT
+creators {"aja"}
+
