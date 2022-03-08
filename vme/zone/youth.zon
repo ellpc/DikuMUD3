@@ -162,8 +162,6 @@ spring
       }
 
       drinker := activator;
-      substring(self.extra.["$interactions_1"].names, payer.name);
-      substring(self.extra.["$interactions_2"].names, payer.name);
       substring(self.extra.["$interactions_1"].names, drinker.name);
       substring(self.extra.["$interactions_2"].names, drinker.name);
       act("You scoop a handful of water to your lips and sip, feeling renewed!", A_ALWAYS, drinker, self, null, TO_CHAR);
