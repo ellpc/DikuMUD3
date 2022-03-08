@@ -139,7 +139,7 @@ spring
       :drink:
       block;
       if (activator.level >= IMMORTAL_LEVEL){
-          sendtext("No need. You've already got everlasting life.!&n", activator);
+          sendtext("No need. You've already got everlasting life!&n", activator);
           goto start;
       }
       cost := atoi(self.extra.["$cost_per_drink"].descr);
