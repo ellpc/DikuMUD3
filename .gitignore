@@ -17,3 +17,4 @@ CTestTestfile.cmake
 Testing/
 unit_tests/CTestTestfile.cmake
 core.*
+.vscode/c_cpp_properties.json
