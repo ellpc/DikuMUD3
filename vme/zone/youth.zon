@@ -66,6 +66,59 @@ dilend
 
 %objects
 
+spring_saveobj
+title "the eternal spring's save object"
+names {"spring save object", "save object", "object", "spring", "saveobj"}
+descr "Etchings on the rock wall of the eternal spring glitter here."
+extra {} "This is a save object."
+extra {"$imm_info"} "This is a save object for the eternal spring. Don't muck about with it. You can toggle it on and off by typing 'togglespring'."
+
+minv 200
+
+extra {"$status"} "ON"
+dilbegin save_spring();
+var
+  pc : unitptr;
+code
+{
+  if(self.extra.["$status"].descr == "ON"){
+    item := findsymbolic("spring@youth");
+    if(item == null){
+      item := load("spring@youth");
+      link(item, findroom("springroom@youth"));
+    }
+  }
+  :start:
+  interrupt(SFB_MSG, ("savespring" in argument), do_save);
+  wait(SFB_CMD, (command("togglespring") or command("savespring") )and (activator.level >= IMMORTAL_LEVEL) );
+  block;
+  if(command("savespring")){goto do_save;}
+  pc := activator;
+  if(self.extra.["$status"].descr == "OFF"){
+      self.extra.["$status"].descr := "ON";
+      sendtext("The Eternal Spring now: On.", pc);
+      item := load("spring@youth");
+      link(item, findroom("springroom@youth"));
+      act("You command $1n into existence.", A_SOMEONE, item, null, null, TO_ALL);
+  }
+  else{
+      self.extra.["$status"].descr := "OFF";
+      sendtext("The Eternal Spring now: Off.", pc);
+      item := findsymbolic("spring@youth");
+      while(item){
+        act("You command $1n out of existence.", A_SOMEONE, item, null, null, TO_ALL);
+        destroy(item);
+        item := findsymbolic("spring@youth");
+      }
+  }
+
+  :do_save:
+  store(self, self.nameidx + "." + self.zoneidx, TRUE);
+  goto start;
+}
+
+end
+
 
 %reset
 
