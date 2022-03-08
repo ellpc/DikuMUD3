@@ -13,3 +13,47 @@ lifespan 20
 reset RESET_NOT
 creators {"aja"}
 
+%dil
+
+%mobiles
+
+
+%objects
+
+board_obj
+names {"boardobj"}
+title "The comp object"
+descr "A board obj that should not be seen by mortals is here."
+minv 200
+end
+
+
+games 
+	names {"games", "object", "disk"}
+	title "an object that saves to disk for the games"
+	descr "A generic object that saves to disk is here. Caution!"
+	extra {} "This object is a storage medium for extras that run the gamification system. It gets saved to disk. Don't eat it. Don't move it. Don't load a new one, it's loaded by dil. The object can be saved to disk manually with the command flushcache or by sending it the _MSG 'flushcache' with a dil. The object automatically saves to disk every half hour. If you add extras to it, please choose specific names for them. If you don't need the extras saved anymore, nset del-extra them and flush."
+	minv IMMORTAL_LEVEL
+	
+	dilbegin save_to_disk();
+	code
+	{
+		heartbeat := 1800 * PULSE_SEC; // saves automatically every half hour
+		interrupt(SFB_CMD, (command("flushcache") and (activator.level >= IMMORTAL_LEVEL)), flush);
+		interrupt(SFB_MSG, (argument == "flushcache"), flush);
+		
+		:start:
+		wait(SFB_TICK, 1);
+		:flush:
+		block;
+		act("Saving games to disk.", A_HIDEINV, self, null, null, TO_ALL);
+		store(self, "games.gamify", TRUE);
+		goto start;
+	}
+	dilend
+end
+
+%reset
+
+
+%end
