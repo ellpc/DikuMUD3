@@ -34,6 +34,36 @@ creators {"Aja"}
 
 %dil
 
+/*In case you want to brute force the age change - dilcopy change_age(i)@youth*/
+dilbegin change_age(years : integer);
+var 
+
+s : string;
+i : integer;
+code
+{
+  if(self.type != UNIT_ST_PC){
+    log("Can't adjust the age of not a player.");
+    quit;  
+  }
+  if(self.level >= IMMORTAL_LEVEL){
+    log("They're immortal....");
+    quit;
+  }
+  if((realtime - self.birth) > (self.lifespan * SECS_PER_MUD_YEAR)){
+    i := self.birth + (years * SECS_PER_MUD_YEAR);
+    i := realtime - ((self.lifespan * SECS_PER_MUD_YEAR) - (50 * SECS_PER_MUD_YEAR));
+    log (self.name + " changed age from " +  itoa((realtime - self.birth) / (SECS_PER_MUD_YEAR)) + " to " +  itoa((realtime-i) / (SECS_PER_MUD_YEAR)) + " mud years. ");
+    self.birth := i;
+    self.hp := self.max_hp;
+    self.mana := self.max_mana;
+    self.endurance := self.max_endurance;
+  }
+    quit;
+}
+dilend
+
+
 %objects
 
 
