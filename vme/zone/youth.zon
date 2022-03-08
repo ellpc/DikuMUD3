@@ -1,0 +1,42 @@
+/*
+filename    youth
+password    ******
+changedby   Aja
+EmailAdd
+request     compile
+version     1
+END HEADER*/
+
+#include <macros.h>
+
+
+/* 
+TODO: Create spring of youth as a disk saved object
+TODO: Create rooms for the fountain
+TODO: Create some effects for the rooms
+TODO: Create a way for others to 'pay' for the life of some and a way for imms to assist.
+TODO: Macro for determining how much life to give back from an extra on the spring so that it can be modified in game. 
+TODO: Logs and cleanup
+TODO: Test
+
+
+
+Credit to Horkval from Valheru for the idea. 
+
+*/
+
+%zone youth
+
+lifespan 10
+reset RESET_ANYHOW
+title "Fountain of Youth"
+creators {"Aja"}
+
+%dil
+
+%objects
+
+
+%reset
+
+%end
