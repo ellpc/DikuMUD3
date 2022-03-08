@@ -13,7 +13,6 @@ END HEADER*/
 /* 
 DONE: Create spring of youth as a disk saved object
 DONE: Create rooms for the fountain
-TODO: Create some effects for the rooms
 TODO: Create a way for others to 'pay' for the life of some and a way for imms to assist.
 TODO: Method for determining how much life to give back from an extra on the spring so that it can be modified in game. 
 TODO: Logs and cleanup
@@ -25,9 +24,10 @@ Credit to Horkval & Vega from Valheru for the idea and probably some code snippe
 
 */
 #define ROOM_MACRO ALWAYS_LIGHT \
-    movement smovement \
-    flags {UNIT_FL_NO_WEATHER, UNIT_FL_OUTDOORS} \
-    dilcopy room_effects();
+    movement SECT_CITY \
+    flags {UNIT_FL_NO_WEATHER, UNIT_FL_OUTDOORS}, UNIT_FL_NO_TELEPORT} \
+
+
 
 %zone youth
 
@@ -38,15 +38,7 @@ creators {"Aja"}
 
 %dil
 
-room_effects
-var
 
-code
-{
-  :start:
-  quit;
-}
-dilend
 
 /*In case you want to brute force the age change - dilcopy change_age(i)@youth*/
 dilbegin change_age(years : integer);
@@ -72,11 +64,27 @@ code
     self.hp := self.max_hp;
     self.mana := self.max_mana;
     self.endurance := self.max_endurance;
+    sendtext("All of sudden, a wave rushes over you and you feel....alive!", self); 
   }
     quit;
 }
 dilend
 
+dilbegin load_spring_save();
+var
+    item : unitptr;
+code
+{
+  :start:
+  item  := restore("spring_saveobj@youth", null);
+  if(item == null){
+      log(self.zoneidx + ": no eternal spring found - loading new.");
+      item := load("spring_saveobj@youth");
+      store(item, "spring_saveobj@youth", TRUE);
+      } 
+    quit;
+}
+dilend
 
 %objects
 
@@ -84,18 +92,111 @@ spring
     names {"Eternal Spring", "spring eternal", "spring", "pool", "water"}
     title "the &c+yEternal Spring&[default]"
     descr "A small pool of exceptionally clear water from a spring sparkles here."
-    extra {} "Sparkling, no matter the weather, you sense this naturally occuring spring does more than just hydrate your mortal body. The pool below the spring has a gentle current that provides just enough movement to catch the eye with sparks of gold, violet, and pink at the peaks of the ripples. This spring may just be the one of legends, taking an adventurer back in time."
-    {"$cost_per_drink"} "20"
+    extra {} "Sparkling, no matter the weather, you sense this naturally occuring spring does more than just hydrate your mortal body. The pool below the spring has a gentle current that provides just enough movement to catch the eye with sparks of gold, violet, and pink at the peaks of the ripples. This spring may just be the one of legends, taking an adventurer back in time. You can try to drink from it, for a price."
+    {"$cost_per_drink"} "10" //idk what price you wanna use, for the sake of argument, we'll use powerpoints. I also don't know how 'halla powerpoints work.
     {"$years_to_restore"} "10"
-    {"$interaction"} ""
-    {"$imm_info"} ""
-
-
+    {"$interactions_1"} ""
+    {"$interactions_2"} ""
     type ITEM_TREASURE
     weight 40000
 
+    dilbegin restore_youth();
 
-end
+  var
+
+      drinker : unitptr;
+      s : string;
+      u : unitptr;
+      i : integer;
+      j : integer;
+      k : integer;
+      cost : integer;
+      years : integer;
+      
+  code
+  {
+      interrupt(SFB_CMD, (command("drink") and (argument in self.names) and (activator.type == UNIT_ST_PC)), drink);
+      heartbeat := 60 * PULSE_SEC;
+      j := 0;
+      
+      :start:
+      wait(SFB_TICK, TRUE);
+      j := j + 1;
+      if (j == 3)
+      {
+          subextra(self.extra, "$interactions_1");
+          addextra(self.extra, {"$interactions_1"}, "");
+      } else if (j == 4)
+      {
+          subextra(self.extra, "$interactions_2");
+          addextra(self.extra, {"$interactions_2"}, "");        
+      }
+      if (j == 6)
+          j := 0;
+      goto start;
+      
+      
+      :drink:
+      block;
+      if (activator.level >= IMMORTAL_LEVEL){
+          sendtext("No need. You've already got everlasting life.!&n", activator);
+          goto start;
+      }
+      cost := atoi(self.extra.["$cost_per_drink"].descr);
+      years := atoi(self.extra.["$years_to_restore"].descr);
+      if (((cost) * 100) > activator.acc_balance){
+          act("Your will to drink from the $2N is strong but you realize you can't afford it.", A_SOMEONE, activator, self, null, TO_CHAR);
+          goto start;
+      }
+      if (not ((activator.name in self.extra.["$interactions_1"].names) or (activator.name in self.extra.["$interactions_2"].names))){
+          addstring(self.extra.["$interactions_1"].names, activator.name);
+          addstring(self.extra.["$interactions_2"].names, activator.name);        
+          sendtext("&c+rDrinking from the spring will cost you " +  itoa(cost) + " powerpoints. It will make you younger by " +  itoa(years) + " mud years. If you are sure you want to continue, drink again.&n&[default]", activator);
+          goto start;
+      }
+
+      i := activator.birth + SECS_PER_REAL_YEAR;
+      if ((realtime - i) < (activator.lifespan * SECS_PER_MUD_YEAR / 6)){    
+          act("You try to drink from the spring but find that it simply dissapears before it hits your lips.", A_SOMEONE, activator,  self, null, TO_CHAR);
+          goto start;
+      }
+
+      drinker := activator;
+      substring(self.extra.["$interactions_1"].names, payer.name);
+      substring(self.extra.["$interactions_2"].names, payer.name);
+      substring(self.extra.["$interactions_1"].names, drinker.name);
+      substring(self.extra.["$interactions_2"].names, drinker.name);
+      act("You scoop a handful of water to your lips and sip, feeling renewed!", A_ALWAYS, drinker, self, null, TO_CHAR);
+      act("$1n scoops a handful of water to $1s lips and instantly looks " + itoa(years) + "younger.", A_SOMEONE, drinker, self, null, TO_REST);
+      i := drinker.birth + (years * SECS_PER_MUD_YEAR);
+      if ((realtime - drinker.birth) > (drinker.lifespan * SECS_PER_MUD_YEAR))
+      i := realtime - ((drinker.lifespan * SECS_PER_MUD_YEAR) - (years * SECS_PER_MUD_YEAR));
+      log (self.name + ": " + drinker.name + " changed age from " +  itoa((realtime - drinker.birth) / (SECS_PER_MUD_YEAR)) + " to " +  itoa((realtime-i) / (SECS_PER_MUD_YEAR)) + " mud years.");
+      
+      s := asctime(realtime);
+      s := s + 
+      " Drinker:" + 
+      drinker.name + 
+      " age from " + 
+      itoa((realtime - drinker.birth) / (SECS_PER_MUD_YEAR)) + 
+      " to " + 
+      itoa((realtime-i) / (SECS_PER_MUD_YEAR)) + 
+      " cost: " + 
+      itoa(YOUTH_PRICE) + 
+      " lifespan: " + 
+      itoa(drinker.lifespan) + "&n";
+      k := savestr("youth.log", s, "a");
+      
+      drinker.birth := i;
+      drinker.hp := drinker.max_hp;
+      drinker.mana := drinker.max_mana;
+      drinker.endurance := drinker.max_endurance;
+      acc_modify(payer, -((cost) * 100));
+      goto start;    
+  }
+  dilend
+
+  end
 
 
 spring_saveobj
@@ -201,8 +302,7 @@ chamber //3
   
 end
 
-
-  wide_pass //7
+wide_pass //7
   title "A large sandstone room"
   descr "You are standing in a partially open alcove with a curved entrance to the west. The air here is slightly warmer. In front of you, you can see the sky above. The floor and walls on three sides of you are blocking any movement outside of this large area. You can move"
   extra {"ceiling", "tafoni", "honeycomb"} "The natural rock formations have created a honeycomb effect in the ceiling and along the tops of the walls where the curvature of the ceiling meets the vertical surface of the walls."
@@ -211,7 +311,6 @@ end
   west to chamber;
   
 end
-
 
 narrow_pass //4
   title "A narrow passageway"
@@ -233,10 +332,8 @@ springroom //6
   title "At the Eternal Spring"
   descr "Amid the lush greenery in stark contrast to the reddened and aged sandstone walls there is a spring-fed pool that seems to begin within the walls and end in an ephemeral pond in this secluded place."
   ROOM_MACRO
-  dilcopy save_spring();
+  dilcopy load_spring_save();
   north to opening;
-  
-
 end
 
 %reset
