@@ -11,17 +11,17 @@ END HEADER*/
 
 
 /* 
-TODO: Create spring of youth as a disk saved object
-TODO: Create rooms for the fountain
+DONE: Create spring of youth as a disk saved object
+DONE: Create rooms for the fountain
 TODO: Create some effects for the rooms
 TODO: Create a way for others to 'pay' for the life of some and a way for imms to assist.
-TODO: Macro for determining how much life to give back from an extra on the spring so that it can be modified in game. 
+TODO: Method for determining how much life to give back from an extra on the spring so that it can be modified in game. 
 TODO: Logs and cleanup
 TODO: Test
 
 
 
-Credit to Horkval from Valheru for the idea. 
+Credit to Horkval & Vega from Valheru for the idea and probably some code snippets. 
 
 */
 #define ROOM_MACRO ALWAYS_LIGHT \
@@ -82,11 +82,15 @@ dilend
 
 spring
     names {"Eternal Spring", "spring eternal", "spring", "pool", "water"}
-    title "the Eternal Spring"
+    title "the &c+yEternal Spring&[default]"
     descr "A small pool of exceptionally clear water from a spring sparkles here."
     extra {} "Sparkling, no matter the weather, you sense this naturally occuring spring does more than just hydrate your mortal body. The pool below the spring has a gentle current that provides just enough movement to catch the eye with sparks of gold, violet, and pink at the peaks of the ripples. This spring may just be the one of legends, taking an adventurer back in time."
-    {"$cost_per_drink"} ""
-    {"$"}
+    {"$cost_per_drink"} "20"
+    {"$years_to_restore"} "10"
+    {"$interaction"} ""
+    {"$imm_info"} ""
+
+
     type ITEM_TREASURE
     weight 40000
 
@@ -95,58 +99,58 @@ end
 
 
 spring_saveobj
-title "the eternal spring's save object"
-names {"spring save object", "save object", "object", "spring", "saveobj"}
-descr "Etchings on the rock wall of the eternal spring glitter here."
-extra {} "This is a save object."
-extra {"$imm_info"} "This is a save object for the eternal spring. Don't muck about with it. You can toggle it on and off by typing 'togglespring'."
+  title "the eternal spring's save object"
+  names {"spring save object", "save object", "object", "spring", "saveobj"}
+  descr "Etchings on the rock wall of the eternal spring glitter here."
+  extra {} "This is a save object."
+  extra {"$imm_info"} "This is a save object for the eternal spring. Don't muck about with it. You can toggle it on and off by typing 'togglespring'."
 
-minv 200
+  minv 200
 
-extra {"$status"} "ON"
+  extra {"$status"} "ON"
 
-dilbegin save_spring();
-var
-  pc : unitptr;
-code
-{
-  if(self.extra.["$status"].descr == "ON"){
-    item := findsymbolic("spring@youth");
-    if(item == null){
-      item := load("spring@youth");
-      link(item, findroom("springroom@youth"));
-    }
-  }
-  :start:
-  interrupt(SFB_MSG, ("savespring" in argument), do_save);
-  wait(SFB_CMD, (command("togglespring") or command("savespring") )and (activator.level >= IMMORTAL_LEVEL) );
-  block;
-  if(command("savespring")){goto do_save;}
-  pc := activator;
-  if(self.extra.["$status"].descr == "OFF"){
-      self.extra.["$status"].descr := "ON";
-      sendtext("The Eternal Spring now: On.", pc);
-      item := load("spring@youth");
-      link(item, findroom("springroom@youth"));
-      act("You command $1n into existence.", A_SOMEONE, item, null, null, TO_ALL);
-  }
-  else{
-      self.extra.["$status"].descr := "OFF";
-      sendtext("The Eternal Spring now: Off.", pc);
+  dilbegin save_spring();
+  var
+    pc : unitptr;
+  code
+  {
+    if(self.extra.["$status"].descr == "ON"){
       item := findsymbolic("spring@youth");
-      while(item){
-        act("You command $1n out of existence.", A_SOMEONE, item, null, null, TO_ALL);
-        destroy(item);
-        item := findsymbolic("spring@youth");
+      if(item == null){
+        item := load("spring@youth");
+        link(item, findroom("springroom@youth"));
       }
+    }
+    :start:
+    interrupt(SFB_MSG, ("savespring" in argument), do_save);
+    wait(SFB_CMD, (command("togglespring") or command("savespring") )and (activator.level >= IMMORTAL_LEVEL) );
+    block;
+    if(command("savespring")){goto do_save;}
+    pc := activator;
+    if(self.extra.["$status"].descr == "OFF"){
+        self.extra.["$status"].descr := "ON";
+        sendtext("The Eternal Spring now: On.", pc);
+        item := load("spring@youth");
+        link(item, findroom("springroom@youth"));
+        act("You command $1n into existence.", A_SOMEONE, item, null, null, TO_ALL);
+    }
+    else{
+        self.extra.["$status"].descr := "OFF";
+        sendtext("The Eternal Spring now: Off.", pc);
+        item := findsymbolic("spring@youth");
+        while(item){
+          act("You command $1n out of existence.", A_SOMEONE, item, null, null, TO_ALL);
+          destroy(item);
+          item := findsymbolic("spring@youth");
+        }
+    }
+
+    :do_save:
+    store(self, self.nameidx + "." + self.zoneidx, TRUE);
+    goto start;
   }
 
-  :do_save:
-  store(self, self.nameidx + "." + self.zoneidx, TRUE);
-  goto start;
-}
-
-dilend
+  dilend
 
 end
 
@@ -180,13 +184,7 @@ entrance //x2
       open {EX_HIDDEN, EX_OPEN_CLOSE, EX_CLOSED};
     north to intro;
 end
-/*x1
-  x2
- 4x3x7x
- 5x 
- 6x 
-Takes place in a sandstone formation (think* arches national park).
-*/
+
 
 chamber //3
   title "A hidden antechamber"
@@ -233,8 +231,9 @@ end
 
 springroom //6
   title "At the Eternal Spring"
-  descr "Amid the lush greenery which is in stark contrast to the reddened and aged sandstone walls there is a spring-fed pool that seems to begin within the walls and end in an ephemeral pond in this secluded place. Te
+  descr "Amid the lush greenery in stark contrast to the reddened and aged sandstone walls there is a spring-fed pool that seems to begin within the walls and end in an ephemeral pond in this secluded place."
   ROOM_MACRO
+  dilcopy save_spring();
   north to opening;
   
 
