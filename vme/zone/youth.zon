@@ -25,7 +25,7 @@ Credit to Horkval & Vega from Valheru for the idea and probably some code snippe
 */
 #define ROOM_MACRO ALWAYS_LIGHT \
     movement SECT_CITY \
-    //flags {UNIT_FL_NO_WEATHER, UNIT_FL_OUTDOORS}, UNIT_FL_NO_TELEPORT} \
+    flags {UNIT_FL_NO_WEATHER, UNIT_FL_OUTDOORS}, UNIT_FL_NO_TELEPORT} \
 
 
 
@@ -93,10 +93,10 @@ spring
     title "the &c+yEternal Spring&[default]"
     descr "A small pool of exceptionally clear water from a spring sparkles here."
     extra {} "Sparkling, no matter the weather, you sense this naturally occuring spring does more than just hydrate your mortal body. The pool below the spring has a gentle current that provides just enough movement to catch the eye with sparks of gold, violet, and pink at the peaks of the ripples. This spring may just be the one of legends, taking an adventurer back in time. You can try to drink from it, for a price."
-    {"$cost_per_drink"} "10" //idk what price you wanna use, for the sake of argument, we'll use powerpoints. I also don't know how 'halla powerpoints work.
-    {"$years_to_restore"} "10"
-    {"$interactions_1"} ""
-    {"$interactions_2"} ""
+    extra {"$cost_per_drink"} "10" //idk what price you wanna use, for the sake of argument, we'll use powerpoints. I also don't know how 'halla powerpoints work.
+    extra {"$years_to_restore"} "10"
+    extra {"$interactions_1"} ""
+    extra {"$interactions_2"} ""
     type ITEM_TREASURE
     weight 40000
 
@@ -185,7 +185,7 @@ spring
       " to " + 
       itoa((realtime-i) / (SECS_PER_MUD_YEAR)) + 
       " cost: " + 
-      itoa(YOUTH_PRICE) + 
+      itoa(cost) + 
       " lifespan: " + 
       itoa(drinker.lifespan) + "&n";
       k := savestr("youth.log", s, "a");
