@@ -827,7 +827,7 @@ void tif_bra_on(unit_affected_type *af, unit_data *unit)
                 act("A lesser medulla oblongata fills your grey matter.", A_ALWAYS, unit, cActParameter(), cActParameter(), TO_CHAR);
                 break;
             case 5:
-                act("You suddenly realize your a moron.", A_ALWAYS, unit, cActParameter(), cActParameter(), TO_CHAR);
+                act("You suddenly realize you're a moron.", A_ALWAYS, unit, cActParameter(), cActParameter(), TO_CHAR);
                 break;
         };
     }

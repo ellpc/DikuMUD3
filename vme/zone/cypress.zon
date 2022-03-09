@@ -480,7 +480,7 @@ descr
 "   Standing at the very top of a small hill in the cypress forest you have
 a magnificent view. The hill is just tall enough for you to peek above the
 tree crowns of the cypress trees. Udgaard is just west of here and a
-stable is to the north."
+stable is to the north. Below you, you can just barely see the tips of rocky spire formations protruding from behind the tall trees."
 
 /* XXX If you plant a cone here something shall happen */
 
@@ -498,6 +498,8 @@ direction";
 north to stable1 descr
 "You see a stable to the north";
 
+down to intro@youth descr
+"You notice the peaks of a strange wall of spires protruding below.";
 
 extra {"east"}
 "The Cypress forest stretches out eastwards and in the distance you can make
