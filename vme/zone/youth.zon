@@ -93,7 +93,7 @@ spring
     title "the &c+yEternal Spring&[default]"
     descr "A small pool of exceptionally clear water from a spring sparkles here."
     extra {} "Sparkling, no matter the weather, you sense this naturally occuring spring does more than just hydrate your mortal body. The pool below the spring has a gentle current that provides just enough movement to catch the eye with sparks of gold, violet, and pink at the peaks of the ripples. This spring may just be the one of legends, taking an adventurer back in time. You can try to drink from it, for a price."
-    extra {"$cost_per_drink"} "10" //idk what price you wanna use, for the sake of argument, we'll use powerpoints. I also don't know how 'halla powerpoints work.
+    extra {"$price_per_drink"} "10" //idk what price you wanna use, for the sake of argument, we'll use powerpoints. I also don't know how 'halla powerpoints work.
     extra {"$years_to_restore"} "10"
     extra {"$interactions_1"} ""
     extra {"$interactions_2"} ""
@@ -110,7 +110,7 @@ spring
       i : integer;
       j : integer;
       k : integer;
-      cost : integer;
+      price : integer;
       years : integer;
       
   code
@@ -142,21 +142,21 @@ spring
           sendtext("No need. You've already got everlasting life!&n", activator);
           goto start;
       }
-      cost := atoi(self.extra.["$cost_per_drink"].descr);
+      price := atoi(self.extra.["$price_per_drink"].descr);
       years := atoi(self.extra.["$years_to_restore"].descr);
-      if( (not(cost)) or (not(years)) ){
-        log("Missing extra on eternal spring. Make sure $cost_per_drink and $years_to_restore extra exist on spring@youth.");
+      if( (not(price)) or (not(years)) ){
+        log("Missing extra on eternal spring. Make sure $price_per_drink and $years_to_restore extra exist on spring@youth.");
         act("You attempt to drink from the fountain and find that you just can't quite reach. Ask an immortal for help.", A_SOMEONE, activator, self, null, TO_CHAR);
         goto start;
       }
-      if ( ((cost) * 100) > activator.acc_balance){
+      if ( ((price) * 100) > activator.acc_balance){
           act("Your will to drink from the $2N is strong but you realize you can't afford it.", A_SOMEONE, activator, self, null, TO_CHAR);
           goto start;
       }
       if (not ((activator.name in self.extra.["$interactions_1"].names) or (activator.name in self.extra.["$interactions_2"].names))){
           addstring(self.extra.["$interactions_1"].names, activator.name);
           addstring(self.extra.["$interactions_2"].names, activator.name);        
-          sendtext("&c+rDrinking from the spring will cost you " +  itoa(cost) + " powerpoints. It will make you younger by " +  itoa(years) + " mud years. If you are sure you want to continue, drink again.&n&[default]", activator);
+          sendtext("&c+rDrinking from the spring will cost you " +  itoa(price) + " powerpoints. It will make you younger by " +  itoa(years) + " mud years. If you are sure you want to continue, drink again.&n&[default]", activator);
           goto start;
       }
 
@@ -184,8 +184,8 @@ spring
       itoa((realtime - drinker.birth) / (SECS_PER_MUD_YEAR)) + 
       " to " + 
       itoa((realtime-i) / (SECS_PER_MUD_YEAR)) + 
-      " cost: " + 
-      itoa(cost) + 
+      " price: " + 
+      itoa(price) + 
       " lifespan: " + 
       itoa(drinker.lifespan) + "&n";
       k := savestr("youth.log", s, "a");
@@ -194,7 +194,7 @@ spring
       drinker.hp := drinker.max_hp;
       drinker.mana := drinker.max_mana;
       drinker.endurance := drinker.max_endurance;
-      acc_modify(payer, -((cost) * 100));
+      acc_modify(payer, -((price) * 100));
       goto start;    
   }
   dilend
