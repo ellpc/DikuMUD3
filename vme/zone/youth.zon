@@ -70,7 +70,7 @@ code
 }
 dilend
 
-dilbegin load_spring_save();
+dilbegin load_save();
 var
     item : unitptr;
 code
@@ -335,7 +335,7 @@ springroom //6
   title "At the Eternal Spring"
   descr "Amid the lush greenery in stark contrast to the reddened and aged sandstone walls there is a spring-fed pool that seems to begin within the walls and end in an ephemeral pond in this secluded place."
   ROOM_MACRO
-  dilcopy load_spring_save();
+  dilcopy load_save();
   north to opening;
 end
 
